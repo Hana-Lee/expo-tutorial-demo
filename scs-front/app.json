@@ -15,7 +15,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "simulator": "iPhone 15 Pro"
     },
     "android": {
       "adaptiveIcon": {
