@@ -12,5 +12,5 @@ const styles = StyleSheet.create({
     width: 320,
     height: 440,
     borderRadius: 18,
-  }
+  },
 })
