@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar'
-import { Alert, StyleSheet, View } from 'react-native'
+import { Alert, Platform, StyleSheet, View } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { useRef, useState } from 'react'
 import ImageViewer from './src/components/ImageViewer'
@@ -28,17 +28,17 @@ export default function App() {
   }
 
   /**
- * 이미지 결과를 처리하는 함수입니다.
- * @param {ImagePickerSuccessResult} result - 이미지 결과 객체
- * 이미지 선택이 취소되지 않은 경우 선택된 이미지를 설정하고 앱 옵션을 표시합니다.
- * 그렇지 않으면 경고 알림을 표시합니다.
- */
+   * 이미지 결과를 처리하는 함수입니다.
+   * @param {ImagePickerSuccessResult} result - 이미지 결과 객체
+   * 이미지 선택이 취소되지 않은 경우 선택된 이미지를 설정하고 앱 옵션을 표시합니다.
+   * 그렇지 않으면 경고 알림을 표시합니다.
+   */
   const handleImageResult = (result) => {
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri)
       setShowAppOptions(true)
     } else {
-      Alert.alert("사진을 선택 해주세요")
+      Alert.alert('사진을 선택 해주세요')
     }
   }
 
@@ -47,7 +47,7 @@ export default function App() {
       allowsEditing: true,
       quality: 1,
     })
-    handleImageResult(result);
+    handleImageResult(result)
   }
 
   const onReset = () => {
@@ -63,18 +63,35 @@ export default function App() {
   }
 
   const onSaveImageAsync = async () => {
-    try {
-      const localUri = await captureRef(imageRef, {
-        height: 440,
-        quality: 1,
-      })
+    if (Platform.OS !== 'web') {
+      try {
+        const localUri = await captureRef(imageRef, {
+          height: 440,
+          quality: 1,
+        })
 
-      await MediaLibrary.saveToLibraryAsync(localUri)
-      if (localUri) {
-        Alert.alert("저장되었습니다.")
+        await MediaLibrary.saveToLibraryAsync(localUri)
+        if (localUri) {
+          Alert.alert('저장되었습니다.')
+        }
+      } catch (e) {
+        console.error(e)
       }
-    } catch (e) {
-      console.error(e)
+    } else {
+      try {
+        const dataUrl = await domtoimage.toJpeg(imageRef.current, {
+          quality: 1,
+          width: 320,
+          height: 440,
+        })
+
+        const link = document.createElement('a')
+        link.download = 'sticker-smash.jpeg'
+        link.href = dataUrl
+        link.click()
+      } catch (e) {
+        console.error(e)
+      }
     }
   }
 
@@ -89,15 +106,15 @@ export default function App() {
       {showAppOptions ? (
         <View style={styles.optionsContainer}>
           <View style={styles.optionsRow}>
-            <IconButton icon={"refresh"} label={"다시 선택"} onPress={onReset}/>
+            <IconButton icon={'refresh'} label={'다시 선택'} onPress={onReset}/>
             <CircleButton onPress={onAddSticker}/>
-            <IconButton icon={"save-alt"} label={"저장"} onPress={onSaveImageAsync}/>
+            <IconButton icon={'save-alt'} label={'저장'} onPress={onSaveImageAsync}/>
           </View>
         </View>
-      ): (
+      ) : (
         <View style={styles.footerContainer}>
-          <Button theme={"primary"} label={"사진 선택"} /* @info */ onPress={pickImageAsync} /* @end *//>
-          <Button label={"사진 사용"} onPress={() => setShowAppOptions(true)}/>
+          <Button theme={'primary'} label={'사진 선택'} /* @info */ onPress={pickImageAsync} /* @end *//>
+          <Button label={'사진 사용'} onPress={() => setShowAppOptions(true)}/>
         </View>
       )}
       <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
